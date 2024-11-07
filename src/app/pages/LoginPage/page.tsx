@@ -15,6 +15,7 @@ const LoginPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [userType, setUserType] = useState('buyer');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false); 
 
   const router = useRouter();
 
@@ -73,8 +74,18 @@ const LoginPage = () => {
 
     instance.post(method, request).then((response) => {
         console.log(response);
+        if (response.data.status === 200) { 
+          setShowSuccessPopup(true); // Show the success popup
+          setErrorMessage(''); // Clear any previous errors
+        } else {
+        setErrorMessage('An error occurred during registration.');
+      }
     }).catch((error) => {
-        console.log(error);
+      if (error.response && error.response.data.code === 401 && error.response.data.message === 'Username Exists') {
+        setErrorMessage('Username already exists. Please choose a different one.');
+      } else {
+        setErrorMessage('An error occurred during registration.');
+      }
     });
 
 
@@ -136,6 +147,13 @@ const LoginPage = () => {
       </div>
       {errorMessage && (
         <p className="error">{errorMessage}</p>
+      )}
+
+      {showSuccessPopup && (
+        <div className="popup">
+          <p>Registration successful! You can now log in.</p>
+          <button onClick={() => setShowSuccessPopup(false)}>Close</button>
+        </div>
       )}
     </div>
   );
